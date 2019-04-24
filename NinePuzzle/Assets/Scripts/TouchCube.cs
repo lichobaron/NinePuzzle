@@ -145,7 +145,7 @@ public class TouchCube : MonoBehaviour {
 
 	private void Move()
 	{
-		if (mouseState)
+		if (true)
 		{
 			int move = CanMove(PlayGame.EmptyPos, gameObject.transform.position.x, gameObject.transform.position.y);
 			//Debug.Log("Colision " + "cursor " + move);

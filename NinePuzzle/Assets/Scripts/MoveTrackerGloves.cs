@@ -14,8 +14,9 @@ public class MoveTrackerGloves : MonoBehaviour
     private float y;
     private float z;
     private Vector3 actualTracker;
+    private Vector3 newPos;
     //Gloves
-    private string path = "C:\\Users\\Takina\\Documents\\GitHub\\FurnitureSimulator\\NinePuzzle\\Assets\\DataGloves\\";
+    private string path = "C:\\Users\\Takina\\Documents\\GitHub\\NinePuzzle\\NinePuzzle\\Assets\\DataGloves\\";
     //    "/Users/licho/Documents/Unity/FurnitureSimulator/FurnitureSimulator/Assets/DataGloves/";
     //Right Glove
     private string[] filenames;
@@ -27,6 +28,27 @@ public class MoveTrackerGloves : MonoBehaviour
     private double[][][] meansl;
     private int[] infol;
     private double[] tuplel;
+    //Transformaciones
+    private float maxXReal = -0.195f;
+    private float maxYReal = -0.206f;
+    private float maxZReal = -0.907f;
+    private float minXReal = -0.500f;
+    private float minYReal = -0.369f;
+    private float minZReal = -0.292f;
+    private float maxXVir = 50f;
+    private float maxYVir = 10f;
+    private float maxZVir = 0f;
+    private float minXVir = -20f;
+    private float minYVir = 0f;
+    private float minZVir = -30f;
+    private int pasos = 1000;
+    private float deltaXReal;
+    private float deltaXVir;
+    private float deltaYReal;
+    private float deltaYVir;
+    private float deltaZReal;
+    private float deltaZVir;
+
 
     // Start is called before the first frame update
     void Start()
@@ -49,6 +71,14 @@ public class MoveTrackerGloves : MonoBehaviour
 
         tuple = new double[14];
         tuplel = new double[14];
+
+        deltaXReal = (maxXReal - minXReal) / pasos;
+        deltaXVir = (maxXVir - minXVir) / pasos;
+        deltaYReal = (maxYReal - minYReal) / pasos;
+        deltaYVir = (maxYVir - minYVir) / pasos;
+        deltaZReal = (maxZReal - minZReal) / pasos;
+        deltaZVir = (maxZVir - minZVir) / pasos;
+        newPos = new Vector3(15, 15, -35);
     }
 
     // Update is called once per frame
@@ -56,16 +86,37 @@ public class MoveTrackerGloves : MonoBehaviour
     {
         InputDataTracker("Tracker0@10.3.137.218");
         InputDataGloves("Glove14Right@10.3.136.131", "Glove14Left@10.3.136.131");
+        TransformarRealVirtual();
+        transform.position = newPos;
     }
 
     void InputDataTracker(string address)
     {
-        posVRPN = VRPN.vrpnTrackerPos(address, 1);
+        posVRPN = VRPN.vrpnTrackerPos(address, 2);
 
-        x = -posVRPN.y * 10 / 0.5f;
-        y = posVRPN.z * 10 / 0.5f;
-        z = -posVRPN.x * 10;
-        actualTracker = new Vector3(x, y, z);
+        x = 1*posVRPN.x;
+        y = -1*posVRPN.z;
+        z = -1*posVRPN.y;
+
+        actualTracker = new Vector3( x, y, z);
+        Debug.Log(new Vector3(x*1000, y*1000, z*1000));
+    }
+
+    void TransformarRealVirtual()
+    {
+        //TransformarX
+        float pX = (actualTracker.x - minXReal) / deltaXReal;
+        float xT = (pX * deltaXVir) + minXVir;
+        //TransformarY
+        float pY = Mathf.Abs((actualTracker.y - minYReal) / deltaYReal);
+        float yT = (pY * deltaYVir) + minYVir;
+        //TransformarZ
+        float pZ = Mathf.Abs((actualTracker.z - minZReal) / deltaZReal);
+        float zT = (pZ * deltaZVir) + minZVir;
+
+        newPos.x = xT;
+        newPos.y = yT;
+        newPos.z = zT;
     }
 
     void InputDataGloves(string addressRight, string addressLeft)
